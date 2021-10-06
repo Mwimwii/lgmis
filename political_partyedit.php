@@ -1,0 +1,176 @@
+<?php
+namespace PHPMaker2020\lgmis20;
+
+// Autoload
+include_once "autoload.php";
+
+// Session
+if (session_status() !== PHP_SESSION_ACTIVE)
+	\Delight\Cookie\Session::start(Config("COOKIE_SAMESITE")); // Init session data
+
+// Output buffering
+ob_start();
+?>
+<?php
+
+// Write header
+WriteHeader(FALSE);
+
+// Create page object
+$political_party_edit = new political_party_edit();
+
+// Run the page
+$political_party_edit->run();
+
+// Setup login status
+SetupLoginStatus();
+SetClientVar("login", LoginStatus());
+
+// Global Page Rendering event (in userfn*.php)
+Page_Rendering();
+
+// Page Rendering event
+$political_party_edit->Page_Render();
+?>
+<?php include_once "header.php"; ?>
+<script>
+var fpolitical_partyedit, currentPageID;
+loadjs.ready("head", function() {
+
+	// Form object
+	currentPageID = ew.PAGE_ID = "edit";
+	fpolitical_partyedit = currentForm = new ew.Form("fpolitical_partyedit", "edit");
+
+	// Validate form
+	fpolitical_partyedit.validate = function() {
+		if (!this.validateRequired)
+			return true; // Ignore validation
+		var $ = jQuery, fobj = this.getForm(), $fobj = $(fobj);
+		if ($fobj.find("#confirm").val() == "confirm")
+			return true;
+		var elm, felm, uelm, addcnt = 0;
+		var $k = $fobj.find("#" + this.formKeyCountName); // Get key_count
+		var rowcnt = ($k[0]) ? parseInt($k.val(), 10) : 1;
+		var startcnt = (rowcnt == 0) ? 0 : 1; // Check rowcnt == 0 => Inline-Add
+		var gridinsert = ["insert", "gridinsert"].includes($fobj.find("#action").val()) && $k[0];
+		for (var i = startcnt; i <= rowcnt; i++) {
+			var infix = ($k[0]) ? String(i) : "";
+			$fobj.data("rowindex", infix);
+			<?php if ($political_party_edit->PoliticalParty->Required) { ?>
+				elm = this.getElements("x" + infix + "_PoliticalParty");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $political_party_edit->PoliticalParty->caption(), $political_party_edit->PoliticalParty->RequiredErrorMessage)) ?>");
+			<?php } ?>
+			<?php if ($political_party_edit->Remarks->Required) { ?>
+				elm = this.getElements("x" + infix + "_Remarks");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "<?php echo JsEncode(str_replace("%s", $political_party_edit->Remarks->caption(), $political_party_edit->Remarks->RequiredErrorMessage)) ?>");
+			<?php } ?>
+
+				// Call Form_CustomValidate event
+				if (!this.Form_CustomValidate(fobj))
+					return false;
+		}
+
+		// Process detail forms
+		var dfs = $fobj.find("input[name='detailpage']").get();
+		for (var i = 0; i < dfs.length; i++) {
+			var df = dfs[i], val = df.value;
+			if (val && ew.forms[val])
+				if (!ew.forms[val].validate())
+					return false;
+		}
+		return true;
+	}
+
+	// Form_CustomValidate
+	fpolitical_partyedit.Form_CustomValidate = function(fobj) { // DO NOT CHANGE THIS LINE!
+
+		// Your custom validation code here, return false if invalid.
+		return true;
+	}
+
+	// Use JavaScript validation or not
+	fpolitical_partyedit.validateRequired = <?php echo Config("CLIENT_VALIDATE") ? "true" : "false" ?>;
+
+	// Dynamic selection lists
+	loadjs.done("fpolitical_partyedit");
+});
+</script>
+<script>
+loadjs.ready("head", function() {
+
+	// Client script
+	// Write your client script here, no need to add script tags.
+
+});
+</script>
+<?php $political_party_edit->showPageHeader(); ?>
+<?php
+$political_party_edit->showMessage();
+?>
+<?php if (!$political_party_edit->IsModal) { ?>
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="<?php echo CurrentPageName() ?>">
+<?php echo $political_party_edit->Pager->render() ?>
+<div class="clearfix"></div>
+</form>
+<?php } ?>
+<form name="fpolitical_partyedit" id="fpolitical_partyedit" class="<?php echo $political_party_edit->FormClassName ?>" action="<?php echo CurrentPageName() ?>" method="post">
+<?php if ($Page->CheckToken) { ?>
+<input type="hidden" name="<?php echo Config("TOKEN_NAME") ?>" value="<?php echo $Page->Token ?>">
+<?php } ?>
+<input type="hidden" name="t" value="political_party">
+<input type="hidden" name="action" id="action" value="update">
+<input type="hidden" name="modal" value="<?php echo (int)$political_party_edit->IsModal ?>">
+<div class="ew-edit-div"><!-- page* -->
+<?php if ($political_party_edit->PoliticalParty->Visible) { // PoliticalParty ?>
+	<div id="r_PoliticalParty" class="form-group row">
+		<label id="elh_political_party_PoliticalParty" for="x_PoliticalParty" class="<?php echo $political_party_edit->LeftColumnClass ?>"><?php echo $political_party_edit->PoliticalParty->caption() ?><?php echo $political_party_edit->PoliticalParty->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $political_party_edit->RightColumnClass ?>"><div <?php echo $political_party_edit->PoliticalParty->cellAttributes() ?>>
+<input type="text" data-table="political_party" data-field="x_PoliticalParty" name="x_PoliticalParty" id="x_PoliticalParty" size="30" maxlength="15" placeholder="<?php echo HtmlEncode($political_party_edit->PoliticalParty->getPlaceHolder()) ?>" value="<?php echo $political_party_edit->PoliticalParty->EditValue ?>"<?php echo $political_party_edit->PoliticalParty->editAttributes() ?>>
+<input type="hidden" data-table="political_party" data-field="x_PoliticalParty" name="o_PoliticalParty" id="o_PoliticalParty" value="<?php echo HtmlEncode($political_party_edit->PoliticalParty->OldValue != null ? $political_party_edit->PoliticalParty->OldValue : $political_party_edit->PoliticalParty->CurrentValue) ?>">
+<?php echo $political_party_edit->PoliticalParty->CustomMsg ?></div></div>
+	</div>
+<?php } ?>
+<?php if ($political_party_edit->Remarks->Visible) { // Remarks ?>
+	<div id="r_Remarks" class="form-group row">
+		<label id="elh_political_party_Remarks" for="x_Remarks" class="<?php echo $political_party_edit->LeftColumnClass ?>"><?php echo $political_party_edit->Remarks->caption() ?><?php echo $political_party_edit->Remarks->Required ? $Language->phrase("FieldRequiredIndicator") : "" ?></label>
+		<div class="<?php echo $political_party_edit->RightColumnClass ?>"><div <?php echo $political_party_edit->Remarks->cellAttributes() ?>>
+<span id="el_political_party_Remarks">
+<input type="text" data-table="political_party" data-field="x_Remarks" name="x_Remarks" id="x_Remarks" size="30" maxlength="100" placeholder="<?php echo HtmlEncode($political_party_edit->Remarks->getPlaceHolder()) ?>" value="<?php echo $political_party_edit->Remarks->EditValue ?>"<?php echo $political_party_edit->Remarks->editAttributes() ?>>
+</span>
+<?php echo $political_party_edit->Remarks->CustomMsg ?></div></div>
+	</div>
+<?php } ?>
+</div><!-- /page* -->
+<?php if (!$political_party_edit->IsModal) { ?>
+<div class="form-group row"><!-- buttons .form-group -->
+	<div class="<?php echo $political_party_edit->OffsetColumnClass ?>"><!-- buttons offset -->
+<button class="btn btn-primary ew-btn" name="btn-action" id="btn-action" type="submit"><?php echo $Language->phrase("SaveBtn") ?></button>
+<button class="btn btn-default ew-btn" name="btn-cancel" id="btn-cancel" type="button" data-href="<?php echo $political_party_edit->getReturnUrl() ?>"><?php echo $Language->phrase("CancelBtn") ?></button>
+	</div><!-- /buttons offset -->
+</div><!-- /buttons .form-group -->
+<?php } ?>
+<?php if (!$political_party_edit->IsModal) { ?>
+<?php echo $political_party_edit->Pager->render() ?>
+<div class="clearfix"></div>
+<?php } ?>
+</form>
+<?php
+$political_party_edit->showPageFooter();
+if (Config("DEBUG"))
+	echo GetDebugMessage();
+?>
+<script>
+loadjs.ready("load", function() {
+
+	// Startup script
+	// Write your table-specific startup script here
+	// console.log("page loaded");
+
+});
+</script>
+<?php include_once "footer.php"; ?>
+<?php
+$political_party_edit->terminate();
+?>
